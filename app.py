@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import ast
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 def main():
     st.title("3D Vertex Visualizer for Camera Calibration")
@@ -43,8 +42,7 @@ def main():
                 st.dataframe(invalid_rows)
 
             # Create a figure for all zones
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
+            fig = go.Figure()
 
             # Iterate through zones and plot on the same axis
             for zone_name, zone_data in data.groupby(data['Zone name'].str.extract(r'(.*) Vertex')[0]):
@@ -59,9 +57,13 @@ def main():
                     X, Y, Z = coords_array[:, 0], coords_array[:, 1], coords_array[:, 2]
 
                     # Plot the points and wireframe
-                    ax.scatter(X, Y, Z, label=f'{zone_name} Vertices')
-                    ax.plot(X, Y, Z, label=f'{zone_name} Wireframe')
-                    ax.plot([X[-1], X[0]], [Y[-1], Y[0]], [Z[-1], Z[0]], c='blue')  # Close loop
+                    fig.add_trace(go.Scatter3d(
+                        x=X, y=Y, z=Z,
+                        mode='markers+lines',
+                        name=f'{zone_name} Wireframe',
+                        marker=dict(size=5, color='red'),
+                        line=dict(color='blue', width=2)
+                    ))
 
                 else:
                     st.warning(f"Not enough valid vertices to visualize {zone_name}. Only {len(coordinates)} valid vertices found.")
@@ -69,17 +71,27 @@ def main():
                     st.write(f"Zone: {zone_name}")
                     st.write(zone_data[['Zone name', 'Data points', 'Coordinates']])
 
-            # Customize the plot
-            ax.set_xlabel('X')
-            ax.set_ylabel('Y')
-            ax.set_zlabel('Z')
-            ax.set_title("All Zones Visualized Together")
-            
-            # Adjust legend placement to the right of the plot
-            ax.legend(loc='upper left', bbox_to_anchor=(1, 1), fontsize=8)
+            # Customize the plot layout
+            fig.update_layout(
+                scene=dict(
+                    xaxis_title='X',
+                    yaxis_title='Y',
+                    zaxis_title='Z'
+                ),
+                title="All Zones Visualized Together",
+                legend=dict(
+                    x=1.05,  # Adjusted to move legend slightly further right
+                    y=1,
+                    traceorder="normal",
+                    font=dict(size=10),
+                    borderwidth=1
+                ),
+                margin=dict(r=0, l=0, b=0, t=40),
+                autosize=True
+            )
 
-            # Show the plot in Streamlit
-            st.pyplot(fig, use_container_width=True)
+            # Show the interactive plot in Streamlit
+            st.plotly_chart(fig, use_container_width=True)
         else:
             st.error("The uploaded file does not contain the required columns ('Zone name' and 'Data points'). Please check your file.")
 
