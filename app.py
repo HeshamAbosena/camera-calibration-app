@@ -74,10 +74,12 @@ def main():
             ax.set_ylabel('Y')
             ax.set_zlabel('Z')
             ax.set_title("All Zones Visualized Together")
-            ax.legend()
+            
+            # Adjust legend placement to the right of the plot
+            ax.legend(loc='upper left', bbox_to_anchor=(1, 1), fontsize=8)
 
             # Show the plot in Streamlit
-            st.pyplot(fig)
+            st.pyplot(fig, use_container_width=True)
         else:
             st.error("The uploaded file does not contain the required columns ('Zone name' and 'Data points'). Please check your file.")
 
