@@ -20,7 +20,11 @@ def main():
 
     if uploaded_file:
         # Load the Excel file
-        data = pd.read_excel(uploaded_file)
+        try:
+            data = pd.read_excel(uploaded_file)
+        except Exception as e:
+            st.error(f"Error reading the Excel file: {e}")
+            return
 
         # Check if required columns exist
         if "Zone name" in data.columns and "Data points" in data.columns:
@@ -34,6 +38,12 @@ def main():
                     return np.nan
 
             data['Coordinates'] = data['Data points'].apply(parse_coordinates)
+
+            # Identify rows with invalid or missing coordinates
+            invalid_rows = data[data['Coordinates'].isna()]
+            if not invalid_rows.empty:
+                st.warning(f"Some rows have invalid or missing coordinates. Total: {len(invalid_rows)}")
+                st.dataframe(invalid_rows)
 
             # Group by zone name
             zones = data.groupby(data['Zone name'].str.extract(r'(.*) Vertex')[0])
@@ -66,7 +76,7 @@ def main():
 
                     st.pyplot(fig)
                 else:
-                    st.warning(f"Not enough valid vertices to visualize {zone_name}.")
+                    st.warning(f"Not enough valid vertices to visualize {zone_name}. Only {len(coordinates)} valid vertices found.")
         else:
             st.error("The uploaded file does not contain the required columns ('Zone name' and 'Data points'). Please check your file.")
 
