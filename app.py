@@ -51,18 +51,50 @@ def main():
                 # Filter valid coordinates
                 coordinates = zone_data.dropna(subset=['Coordinates'])['Coordinates']
 
-                if len(coordinates) >= 3:
+                if len(coordinates) == 4:  # We expect exactly 4 points for each zone
                     # Extract XYZ arrays
                     coords_array = np.vstack(coordinates)
                     X, Y, Z = coords_array[:, 0], coords_array[:, 1], coords_array[:, 2]
 
-                    # Plot the points and wireframe
+                    # Plot the points
                     fig.add_trace(go.Scatter3d(
                         x=X, y=Y, z=Z,
-                        mode='markers+lines',
-                        name=f'{zone_name} Wireframe',
-                        marker=dict(size=5, color='red'),
-                        line=dict(color='blue', width=2)
+                        mode='markers',
+                        name=f'{zone_name} Vertices',
+                        marker=dict(size=5, color='red')
+                    ))
+
+                    # Draw wireframe (4 edges connecting the 4 points to form a closed shape)
+                    # Edge 1: from point 1 to point 2
+                    fig.add_trace(go.Scatter3d(
+                        x=[X[0], X[1]], y=[Y[0], Y[1]], z=[Z[0], Z[1]],
+                        mode='lines',
+                        line=dict(color='blue', width=2),
+                        name=f'{zone_name} Edge 1'
+                    ))
+
+                    # Edge 2: from point 2 to point 3
+                    fig.add_trace(go.Scatter3d(
+                        x=[X[1], X[2]], y=[Y[1], Y[2]], z=[Z[1], Z[2]],
+                        mode='lines',
+                        line=dict(color='blue', width=2),
+                        name=f'{zone_name} Edge 2'
+                    ))
+
+                    # Edge 3: from point 3 to point 4
+                    fig.add_trace(go.Scatter3d(
+                        x=[X[2], X[3]], y=[Y[2], Y[3]], z=[Z[2], Z[3]],
+                        mode='lines',
+                        line=dict(color='blue', width=2),
+                        name=f'{zone_name} Edge 3'
+                    ))
+
+                    # Edge 4: from point 4 to point 1 (to close the shape)
+                    fig.add_trace(go.Scatter3d(
+                        x=[X[3], X[0]], y=[Y[3], Y[0]], z=[Z[3], Z[0]],
+                        mode='lines',
+                        line=dict(color='blue', width=2),
+                        name=f'{zone_name} Edge 4'
                     ))
 
                 else:
