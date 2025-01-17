@@ -8,12 +8,7 @@ import matplotlib.pyplot as plt
 def main():
     st.title("3D Vertex Visualizer for Camera Calibration")
 
-    st.markdown("""
-    **How to Use:**
-    1. Upload an Excel file containing XYZ coordinates for vehicle zones.
-    2. View the generated 3D wireframes for each zone.
-    3. Rotate, zoom, and inspect the geometry interactively.
-    """)
+    st.markdown("""**How to Use:** 1. Upload an Excel file containing XYZ coordinates for vehicle zones. 2. View the generated 3D wireframes for each zone. 3. Rotate, zoom, and inspect the geometry interactively.""")
 
     # File uploader
     uploaded_file = st.file_uploader("Upload your Excel file", type=["xlsx"])
@@ -33,7 +28,9 @@ def main():
             # Parse and extract XYZ coordinates
             def parse_coordinates(data_point):
                 try:
-                    return np.array(ast.literal_eval(data_point))
+                    # Fixing the format of the coordinate string (space-separated to comma-separated)
+                    formatted_data_point = data_point.replace(' ', ',')
+                    return np.array(ast.literal_eval(formatted_data_point))
                 except (ValueError, SyntaxError):
                     return np.nan
 
