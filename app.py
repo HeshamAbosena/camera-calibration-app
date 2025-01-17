@@ -77,6 +77,9 @@ def main():
                     st.pyplot(fig)
                 else:
                     st.warning(f"Not enough valid vertices to visualize {zone_name}. Only {len(coordinates)} valid vertices found.")
+                    # Log problematic zone details
+                    st.write(f"Zone: {zone_name}")
+                    st.write(zone_data[['Zone name', 'Data points', 'Coordinates']])
         else:
             st.error("The uploaded file does not contain the required columns ('Zone name' and 'Data points'). Please check your file.")
 
