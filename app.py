@@ -42,41 +42,42 @@ def main():
                 st.warning(f"Some rows have invalid or missing coordinates. Total: {len(invalid_rows)}")
                 st.dataframe(invalid_rows)
 
-            # Group by zone name
-            zones = data.groupby(data['Zone name'].str.extract(r'(.*) Vertex')[0])
+            # Create a figure for all zones
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
 
-            # Visualize each zone
-            for zone_name, zone_data in zones:
+            # Iterate through zones and plot on the same axis
+            for zone_name, zone_data in data.groupby(data['Zone name'].str.extract(r'(.*) Vertex')[0]):
                 st.subheader(f"Zone: {zone_name}")
 
                 # Filter valid coordinates
                 coordinates = zone_data.dropna(subset=['Coordinates'])['Coordinates']
 
                 if len(coordinates) >= 3:
-                    fig = plt.figure()
-                    ax = fig.add_subplot(111, projection='3d')
-
                     # Extract XYZ arrays
                     coords_array = np.vstack(coordinates)
                     X, Y, Z = coords_array[:, 0], coords_array[:, 1], coords_array[:, 2]
 
                     # Plot the points and wireframe
-                    ax.scatter(X, Y, Z, c='red', label='Vertices')
-                    ax.plot(X, Y, Z, c='blue', label='Wireframe')
+                    ax.scatter(X, Y, Z, label=f'{zone_name} Vertices')
+                    ax.plot(X, Y, Z, label=f'{zone_name} Wireframe')
                     ax.plot([X[-1], X[0]], [Y[-1], Y[0]], [Z[-1], Z[0]], c='blue')  # Close loop
 
-                    ax.set_xlabel('X')
-                    ax.set_ylabel('Y')
-                    ax.set_zlabel('Z')
-                    ax.set_title(zone_name)
-                    ax.legend()
-
-                    st.pyplot(fig)
                 else:
                     st.warning(f"Not enough valid vertices to visualize {zone_name}. Only {len(coordinates)} valid vertices found.")
                     # Log problematic zone details
                     st.write(f"Zone: {zone_name}")
                     st.write(zone_data[['Zone name', 'Data points', 'Coordinates']])
+
+            # Customize the plot
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.set_zlabel('Z')
+            ax.set_title("All Zones Visualized Together")
+            ax.legend()
+
+            # Show the plot in Streamlit
+            st.pyplot(fig)
         else:
             st.error("The uploaded file does not contain the required columns ('Zone name' and 'Data points'). Please check your file.")
 
